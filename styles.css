@@ -1,0 +1,116 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px;
+    background-color: #000;
+    color: #fff;
+}
+
+.timeline {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    width: 100%;
+    height: 20px;
+    background-color: #afafaf79;
+    position: relative;
+}
+
+.timeline-bar {
+    height: 100%;
+    background-color: #4caf50;
+    position: absolute;
+    left: 0;
+}
+
+.timeline-marker {
+    width: 2px;
+    height: 20px;
+    background-color: #ffffff;
+    position: absolute;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timeline-marker-image {
+    width: 32px;
+    height: 32px;
+    bottom: 45px;
+    position: absolute;
+    border-radius: 10px;
+}
+
+.timeline-marker.timeline-hour-tick {
+    width: 1px;
+    height: 10px;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.timeline-marker.timeline-minute-tick {
+    width: 1px;
+    height: 5px;
+    top: 0px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.timeline-tick-label {
+    bottom: 10px;
+    color: #ffffff;
+    position: absolute;
+    text-align: center;
+}
+
+.timeline-label {
+    top: 20px;
+    height: 20px;
+    color: #ffffff;
+    position: absolute;
+    text-align: center;
+}
+/** #localtime should be large and centered in the page with an off grey color */
+#localtime {
+    font-size: 5em;
+    text-align: center;
+    color: #afafaf;
+    padding: 0;
+    margin: 0;
+}
+
+#centered-div.locked #localtime{
+    color: rgba(255,0,0,0.5);
+}
+
+#centered-div.locked {
+    cursor: pointer; /* Change the cursor when hovering over the icon */
+
+}
+#centered-div {
+    padding-top: 50px;
+    display: flex;
+    flex-direction: column;
+    /*justify-content: center;*/
+    align-items: center;
+    height: 100vh;
+}
+
+
+
+#unlock-icon {
+    font-size: 2em; /* Increase the size of the icon */
+    color: #4caf50; /* Change the color of the icon */
+    transition: color 0.3s ease; /* Add a transition effect when the color changes */
+    opacity: 0.2;
+}
+
+.locked #unlock-icon {
+    opacity: 1;
+}
+
+#label-value {
+    font-size: 1.5em;
+    color: #afafaf;
+}
