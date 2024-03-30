@@ -1,6 +1,7 @@
 const container = document.getElementById("jsoneditor")
 const options = {
     modes: ['code', 'tree'],
+    colorPicker: true,
     templates: [
         {
             text: 'Timezone',
