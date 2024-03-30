@@ -202,7 +202,6 @@ function update() {
     });
     updateLocalTime()
     requestAnimationFrame(update)
-
 }
 
 // Initialization
