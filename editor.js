@@ -1,5 +1,6 @@
 const container = document.getElementById("jsoneditor")
 const options = {
+    modes: ['code', 'tree'],
     templates: [
         {
             text: 'Timezone',
