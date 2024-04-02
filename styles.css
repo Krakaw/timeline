@@ -9,21 +9,14 @@ body {
 }
 
 .logo {
-    /* Left aligned and in the background */
-    display: flex;
-    width: 100%;
-    flex-direction: row;
+    width: 128px;
+    height: 128px;
+    position: absolute;
     top: 20px;
     left: 20px;
-
     opacity: 0.8;
 }
 
-.logo img {
-    display: flex;
-    width: 64px;
-    height: 64px;
-}
 
 .timeline {
     margin-top: 40px;
@@ -106,15 +99,11 @@ body {
 
 }
 #centered-div {
-    padding-top: 50px;
     display: flex;
     flex-direction: column;
-    /*justify-content: center;*/
     align-items: center;
-    height: 100vh;
+    padding-bottom: 20px;
 }
-
-
 
 #unlock-icon {
     font-size: 2em; /* Increase the size of the icon */
@@ -130,4 +119,27 @@ body {
 #label-value {
     font-size: 1.5em;
     color: #afafaf;
+}
+
+.editor {
+    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.editor i {
+    font-size: 2em;
+    color: #4caf50;
+    cursor: pointer;
+}
+
+#jsoneditor {
+    width: 100%;
+    height: 400px;
+    display: none;
+}
+
+#jsoneditor.visible {
+    display: block;
 }
