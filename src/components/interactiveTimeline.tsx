@@ -1,9 +1,8 @@
 interface PageProps {
-    from_zone?: string;
-    to_zone?: string | string[];
-    from_time?: Date;
+    convertedTimes?:  string[];
+    formattedFromTime?: string;
 }
 
-export default function InteractiveTimeline(props: PageProps) {
-    return (<h1>GERER</h1>)
+export default function InteractiveTimeline({}: PageProps) {
+    return (<h1>Test</h1>)
 }
