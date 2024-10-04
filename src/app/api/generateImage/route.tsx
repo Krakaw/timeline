@@ -6,7 +6,8 @@ export const runtime = "edge";
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const fromTime = decodeURIComponent(searchParams.get('fromTime') || '');
-    const toTime = decodeURIComponent(searchParams.get('toTime') || '');
+    console.log(searchParams.getAll('toTime'))
+    const toTimes = (searchParams.getAll('toTime') || []).map((time) => decodeURIComponent(time));
 
     return new ImageResponse(
         (
@@ -44,16 +45,33 @@ export async function GET(req: NextRequest) {
                 >
                     to
                 </p>
-                <p
-                    style={{
-                        fontSize: 60,
-                        fontWeight: 600,
-                        margin: 0,
-                        color: '#d4af37', // Match gold for consistency
-                    }}
-                >
-                    {toTime}
-                </p>
+
+                {toTimes.map((toTime) => (
+                    <div
+                        key={toTime}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: '#3f3f3f', // Darker grey background for contrast
+                            borderRadius: 10,
+                            padding: '20px',
+                            margin: '10px 0',
+                        }}
+                    >
+                        <p
+                            style={{
+                                fontSize: 60,
+                                fontWeight: 600,
+                                margin: 0,
+                                color: '#d4af37', // Match gold for consistency
+                            }}
+                        >
+                            {toTime}
+                        </p>
+                    </div>
+                ))}
+
             </div>
         ),
         {

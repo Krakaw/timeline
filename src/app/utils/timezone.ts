@@ -88,11 +88,11 @@ export function findClosestTimezone(query: string): string | undefined {
     return timezoneAbbreviations[normalizedQuery] ?? closestMatch?.canonical
 }
 
-export function convertTime(fromZoneRaw: string, toZoneRaw: string, fromTimeRaw?: string ) {
+export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeRaw?: string ) {
 
     const fromZone = findClosestTimezone(fromZoneRaw);
     const fromTime = decodeURIComponent(fromTimeRaw|| DateTime.now().setZone(fromZone).toFormat('HH:mm'));
-    const toZone = findClosestTimezone(toZoneRaw);
+
 
     const fromDateTime = DateTime.fromFormat(`${fromTime}`, 'HH:mm', {
         zone: fromZone,
@@ -102,12 +102,18 @@ export function convertTime(fromZoneRaw: string, toZoneRaw: string, fromTimeRaw?
         throw new Error('Invalid time format');
     }
 
-    const toDateTime = fromDateTime.setZone(toZone);
+    const convertedTimes = toZonesRaw.map((toZoneRaw) => {
+        const toZone = findClosestTimezone(toZoneRaw);
+
+        const toDateTime = fromDateTime.setZone(toZone);
+        return toDateTime.toFormat('yyyy-MM-dd HH:mm z');
+    })
+
     return {
         fromTime,
         fromZone,
-        toZone,
+        toZones: toZonesRaw,
         formattedFromTime: fromDateTime.toFormat('yyyy-MM-dd HH:mm z'),
-        convertedTime: toDateTime.toFormat('yyyy-MM-dd HH:mm z'),
+        convertedTimes
     };
 }
