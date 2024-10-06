@@ -1,5 +1,7 @@
 import levenshtein from 'fast-levenshtein';
 import {DateTime} from "luxon";
+import {Pin} from "@/app/components/WorldMap";
+import {timezoneLocations} from "@/app/utils/timezoneLocations";
 
 // List of common timezone abbreviations mapped to IANA equivalents
 const timezoneAbbreviations: Record<string, string> = {
@@ -68,7 +70,7 @@ const timezoneAbbreviations: Record<string, string> = {
 const allTimezones: { name: string, canonical: string }[] = [
 
 
-    ...Intl.supportedValuesOf('timeZone').map((tz) => ({ name: tz, canonical: tz })),
+    ...Intl.supportedValuesOf('timeZone').map((tz) => ({name: tz, canonical: tz})),
 ];
 
 export function findClosestTimezone(query: string): string | undefined {
@@ -88,10 +90,10 @@ export function findClosestTimezone(query: string): string | undefined {
     return timezoneAbbreviations[normalizedQuery] ?? closestMatch?.canonical
 }
 
-export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeRaw?: string ) {
+export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeRaw?: string) {
 
     const fromZone = findClosestTimezone(fromZoneRaw);
-    const fromTime = decodeURIComponent(fromTimeRaw|| DateTime.now().setZone(fromZone).toFormat('HH:mm'));
+    const fromTime = decodeURIComponent(fromTimeRaw || DateTime.now().setZone(fromZone).toFormat('HH:mm'));
 
 
     const fromDateTime = DateTime.fromFormat(`${fromTime}`, 'HH:mm', {
@@ -102,17 +104,28 @@ export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeR
         throw new Error('Invalid time format');
     }
 
-    const convertedTimes = toZonesRaw.map((toZoneRaw) => {
-        const toZone = findClosestTimezone(toZoneRaw);
+    const toZones = toZonesRaw.map(findClosestTimezone);
+    const convertedTimes: Pin[] = toZones.map((toZone) => {
+        const {
+            latitude,
+            longitude
+        } = timezoneLocations.find((location) => location.timezone === toZone) || {latitude: 0, longitude: 0};
+        const toDateTime = fromDateTime.setZone(toZone).toFormat('yyyy-MM-dd HH:mm z');
+        return {
+            name: toZone,
+            latitude,
+            longitude,
+            time: toDateTime
 
-        const toDateTime = fromDateTime.setZone(toZone);
-        return toDateTime.toFormat('yyyy-MM-dd HH:mm z');
+        } as Pin;
+
+
     })
 
     return {
         fromTime,
         fromZone,
-        toZones: toZonesRaw,
+        toZones,
         formattedFromTime: fromDateTime.toFormat('yyyy-MM-dd HH:mm z'),
         convertedTimes
     };

@@ -6,7 +6,6 @@ export const runtime = "edge";
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const fromTime = decodeURIComponent(searchParams.get('fromTime') || '');
-    console.log(searchParams.getAll('toTime'))
     const toTimes = (searchParams.getAll('toTime') || []).map((time) => decodeURIComponent(time));
 
     return new ImageResponse(

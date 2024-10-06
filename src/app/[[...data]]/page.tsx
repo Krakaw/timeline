@@ -1,8 +1,14 @@
 import {notFound} from 'next/navigation';
 import {convertTime} from "@/app/utils/timezone";
 import {Metadata} from "next";
-import InteractiveTimeline from "@/components/interactiveTimeline";
 import {parseArray} from "@/app/utils/parseParams";
+import {Pin} from "@/app/components/WorldMap";
+import {timezoneLocations} from "@/app/utils/timezoneLocations";
+import dynamic from "next/dynamic";
+
+const WorldMap = dynamic(() => import("@/app/components/WorldMap"), {
+    ssr: false, // Disables server-side rendering for this component
+});
 
 interface PageProps {
     params: {
@@ -20,7 +26,7 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
             title: 'Timeline'
         }
     }
-    const { convertedTimes, formattedFromTime} = convertTime(from_zone, to_zones, from_time);
+    const {convertedTimes, formattedFromTime} = convertTime(from_zone, to_zones, from_time);
 
 
     return {
@@ -43,30 +49,33 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
 
 export default function ConversionPage({params}: PageProps) {
     const {data} = params;
-    const {from_zone, to_zones, from_time} = parseArray(data || []);
+    const {from_zone = '', to_zones, from_time} = parseArray(data || []);
 
 
     try {
-        if (!from_zone || !to_zones.length) {
-            return (
-                <InteractiveTimeline/>
-            );
+
+        const {
+            convertedTimes,
+            formattedFromTime,
+            fromZone
+        } = convertTime(from_zone || '', to_zones, from_time);
+
+        const {
+            latitude,
+            longitude
+        } = timezoneLocations.find((location) => location.timezone === fromZone) || {latitude: 0, longitude: 0};
+        const fromZoneData = {
+            name: from_zone,
+            latitude,
+            longitude,
+            time: formattedFromTime
         }
-        const {convertedTimes, formattedFromTime} = convertTime(from_zone, to_zones, from_time);
 
 
         return (
-            <div style={{fontFamily: 'Arial, sans-serif', textAlign: 'center', padding: '50px'}}>
-                <h1>Timezone Conversion</h1>
-                <p>
-                    <strong>From:</strong> {formattedFromTime}
-                </p>
-                {convertedTimes.map((convertedTime, index) => (
-                    <p key={index}>
-                        <strong>To:</strong> {convertedTime}
-                    </p>
-                ))}
-            </div>
+            <>
+                <WorldMap fromZone={fromZoneData} toZones={convertedTimes}/>
+            </>
         );
     } catch (error) {
         console.log(error)
