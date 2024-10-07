@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
         {
             // 16:9 aspect ratio
             width: 1200,
-            height: 675,
+            height: 630,
         }
     );
 }

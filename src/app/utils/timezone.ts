@@ -76,8 +76,16 @@ const allTimezones: { name: string, canonical: string }[] = [
 export function findClosestTimezone(query: string): string | undefined {
     const normalizedQuery = query.toLowerCase();
 
+    const exactMatch = allTimezones.find((tz) => {
+        const [, city] = tz.name.toLowerCase().split('/');
+        return tz.name.toLowerCase() === normalizedQuery || city === normalizedQuery;
+    });
+    if (exactMatch) {
+        return exactMatch.canonical;
+    }
     let closestMatch: { name: string, canonical: string } | undefined;
     let smallestDistance = Infinity;
+
 
     allTimezones.forEach((tz) => {
         const distance = levenshtein.get(tz.name.toLowerCase(), normalizedQuery);
