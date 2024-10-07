@@ -88,7 +88,8 @@ export function findClosestTimezone(query: string): string | undefined {
 
 
     allTimezones.forEach((tz) => {
-        const distance = levenshtein.get(tz.name.toLowerCase(), normalizedQuery);
+        const [, city] = tz.name.toLowerCase().split('/');
+        const distance = levenshtein.get(city, normalizedQuery);
         if (distance < smallestDistance) {
             smallestDistance = distance;
             closestMatch = tz;
@@ -112,29 +113,37 @@ export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeR
         throw new Error('Invalid time format');
     }
 
+    const {latitude, longitude} = timezoneLocations.find((location) => location.timezone === fromZone) || {
+        latitude: 0,
+        longitude: 0
+    };
+    const fromPin: Pin = {
+        name: fromZone || '',
+        latitude,
+        longitude,
+        time: fromDateTime.toFormat('yyyy-MM-dd HH:mm z'),
+        date: fromDateTime.toISO()
+    }
+
     const toZones = toZonesRaw.map(findClosestTimezone);
-    const convertedTimes: Pin[] = toZones.map((toZone) => {
+    const toPins: Pin[] = toZones.map((toZone) => {
         const {
             latitude,
             longitude
         } = timezoneLocations.find((location) => location.timezone === toZone) || {latitude: 0, longitude: 0};
-        const toDateTime = fromDateTime.setZone(toZone).toFormat('yyyy-MM-dd HH:mm z');
+        const date = fromDateTime.setZone(toZone);
+        const toDateTimeString = date.toFormat('yyyy-MM-dd HH:mm z');
         return {
             name: toZone,
             latitude,
             longitude,
-            time: toDateTime
-
+            time: toDateTimeString,
+            date: date.toISO()
         } as Pin;
-
-
-    })
+    });
 
     return {
-        fromTime,
-        fromZone,
-        toZones,
-        formattedFromTime: fromDateTime.toFormat('yyyy-MM-dd HH:mm z'),
-        convertedTimes
+        fromPin,
+        toPins
     };
 }

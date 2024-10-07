@@ -1,8 +1,7 @@
 import {notFound} from 'next/navigation';
 import {convertTime} from "@/app/utils/timezone";
 import {Metadata} from "next";
-import {parseArray} from "@/app/utils/parseParams";
-import {timezoneLocations} from "@/app/utils/timezoneLocations";
+import {parseInputParamsArray} from "@/app/utils/parseParams";
 import dynamic from "next/dynamic";
 
 const WorldMap = dynamic(() => import("@/app/components/WorldMap"), {
@@ -19,15 +18,15 @@ interface PageProps {
 export async function generateMetadata({params}: PageProps): Promise<Metadata> {
     const {data} = params;
 
-    const {from_zone, to_zones, from_time} = parseArray(data || []);
+    const {from_zone, to_zones, from_time} = parseInputParamsArray(data || []);
     if (!from_zone || !to_zones.length) {
         return {
             title: 'Timeline'
         }
     }
-    const {convertedTimes, formattedFromTime} = convertTime(from_zone, to_zones, from_time);
+    const {toPins, fromPin} = convertTime(from_zone, to_zones, from_time);
 
-
+    const formattedFromTime = fromPin.time;
     return {
         metadataBase: new URL('https://timeline.dyn-ip.me'),
         title: `Timeline`,
@@ -39,7 +38,7 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
             description: `When the time is ${formattedFromTime}`,
             images: [
                 {
-                    url: `/api/generateImage.jpg?fromTime=${formattedFromTime}&${convertedTimes.map(({time}) => `toTime=${time}`).join('&')}`,
+                    url: `/api/generateImage.jpg?fromTime=${formattedFromTime}&${toPins.map(({time}) => `toTime=${time}`).join('&')}`,
                     width: 1200,
                     height: 630,
                     alt: 'Converted Time',
@@ -51,32 +50,18 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
 
 export default function ConversionPage({params}: PageProps) {
     const {data} = params;
-    const {from_zone = '', to_zones, from_time} = parseArray(data || []);
+    const {from_zone = '', to_zones, from_time} = parseInputParamsArray(data || []);
 
 
     try {
-
         const {
-            convertedTimes,
-            formattedFromTime,
-            fromZone
+            toPins,
+            fromPin,
         } = convertTime(from_zone || '', to_zones, from_time);
-
-        const {
-            latitude,
-            longitude
-        } = timezoneLocations.find((location) => location.timezone === fromZone) || {latitude: 0, longitude: 0};
-        const fromZoneData = {
-            name: from_zone,
-            latitude,
-            longitude,
-            time: formattedFromTime
-        }
-
 
         return (
             <>
-                <WorldMap fromZone={fromZoneData} toZones={convertedTimes}/>
+                <WorldMap fromZone={fromPin} toZones={toPins}/>
             </>
         );
     } catch (error) {

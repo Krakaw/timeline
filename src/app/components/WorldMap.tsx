@@ -1,14 +1,18 @@
 'use client';
 
-import {MapContainer, TileLayer, Marker, Tooltip, FeatureGroup, Popup} from 'react-leaflet';
-import {FeatureGroup as LFeatureGroup, Map} from 'leaflet';
+import './WorldMap.css'
+import {MapContainer, TileLayer, Marker, FeatureGroup, Popup} from 'react-leaflet';
+import {DivIcon, FeatureGroup as LFeatureGroup, Map} from 'leaflet';
 import React from 'react'
+import {DateTime} from "luxon";
 
 export interface Pin {
     name: string;
     latitude: number;
     longitude: number;
     time: string;
+    date: string,
+    dateTime?: DateTime;
 }
 
 interface WorldMapProps {
@@ -18,20 +22,32 @@ interface WorldMapProps {
 
 
 export default function WorldMap({fromZone, toZones}: WorldMapProps) {
-    const fromTimeZone = fromZone || {name: '', latitude: 0, longitude: 0, time: ''};
+    const fromTimeZone = fromZone || {name: '', latitude: 0, longitude: 0, time: '', date: ''} as Pin;
     const mapRef = React.useRef<Map>(null);
     const groupRef = React.useRef<LFeatureGroup>(null);
 
+    fromTimeZone.dateTime = DateTime.fromISO(fromTimeZone.date, {setZone: true});
 
     setTimeout(() => {
-        console.log(mapRef.current, groupRef.current)
 
         if (!mapRef.current || !groupRef.current) {
             return;
         }
+        const map = mapRef.current;
         const group = groupRef.current;
-        mapRef.current?.fitBounds(group.getBounds());
+        map.fitBounds(group.getBounds());
+        map.setZoom(map.getZoom() - 1);
+        group.eachLayer((layer) => {
+            if (layer.openPopup) {
+                layer.openPopup();
+            }
+        });
     }, 1)
+
+    const divIcon = new DivIcon({
+        className: 'custom-icon',
+        html: `<div class="circle"></div>`
+    });
 
     return (
         <MapContainer zoom={3} center={[0, 0]} ref={mapRef} style={{height: '100vh', width: '100%'}}>
@@ -42,19 +58,29 @@ export default function WorldMap({fromZone, toZones}: WorldMapProps) {
 
             <FeatureGroup ref={groupRef}>
                 {/* From Zone Marker */}
-                <Marker position={[fromTimeZone.latitude, fromTimeZone.longitude]}>
-                    <Popup><h1>{fromTimeZone.name}</h1></Popup>
-                    <Tooltip permanent><h1>{fromTimeZone.time}</h1></Tooltip>
+                <Marker position={[fromTimeZone.latitude, fromTimeZone.longitude]} icon={divIcon}>
+                    <Popup autoClose={false} closeButton={false} closeOnClick={false}>
+                        <h1>
+                            {fromTimeZone.time.split(' ').pop()}<br/>{fromTimeZone.dateTime.toFormat('yyyy-MM-dd HH:mm')}
+                        </h1>
+
+                    </Popup>
                 </Marker>
 
                 {/* To Zones Markers */}
-                {toZones.map((zone, index) => (
-                    <Marker key={index} position={[zone.latitude, zone.longitude]}>
-                        <Tooltip permanent>
-                            <h3>{zone.time}</h3>
-                        </Tooltip>
-                    </Marker>
-                ))}
+                {toZones.map((zone, index) => {
+                    zone.dateTime = DateTime.fromISO(zone.date, {setZone: true});
+                    return (
+                        <Marker key={index} position={[zone.latitude, zone.longitude]} icon={divIcon}>
+                            <Popup autoClose={false} closeButton={false} closeOnClick={false}>
+                                <h3>
+                                    {zone.time.split(' ').pop()}<br/>{zone.dateTime.toFormat('yyyy-MM-dd HH:mm')}
+
+                                </h3>
+                            </Popup>
+                        </Marker>
+                    )
+                })}
             </FeatureGroup>
         </MapContainer>
     );

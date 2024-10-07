@@ -1,0 +1,23 @@
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+.leaflet-popup-content-wrapper {
+    background-color: rgba(42, 40, 40, 0.91);
+    color: #fff;
+}
+
+.leaflet-popup-content-wrapper h1 {
+    color: #da6a19;
+    font-size: 1.2em;
+}
+
+.circle {
+    width: 10px;
+    height: 10px;
+    background-color: #3498db; /* Change color as needed */
+    border-radius: 50%;
+}
