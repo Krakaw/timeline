@@ -122,7 +122,8 @@ export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeR
         latitude,
         longitude,
         time: fromDateTime.toFormat('yyyy-MM-dd HH:mm z'),
-        date: fromDateTime.toISO()
+        date: fromDateTime.toISO(),
+        isFrom: true
     }
 
     const toZones = toZonesRaw.map(findClosestTimezone);
@@ -138,12 +139,11 @@ export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeR
             latitude,
             longitude,
             time: toDateTimeString,
-            date: date.toISO()
+            date: date.toISO(),
+            isFrom: false
         } as Pin;
     });
+    toPins.push(fromPin);
 
-    return {
-        fromPin,
-        toPins
-    };
+    return toPins;
 }

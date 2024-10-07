@@ -5,14 +5,24 @@
     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
+.leaflet-popup-tip-container {
+    z-index: 1;
+}
+
 .leaflet-popup-content-wrapper {
     background-color: rgba(42, 40, 40, 0.91);
     color: #fff;
+    cursor: pointer;
 }
 
 .leaflet-popup-content-wrapper h1 {
     color: #da6a19;
     font-size: 1.2em;
+    z-index: 3;
+}
+
+.leaflet-popup-content-wrapper h3 {
+    z-index: 2;
 }
 
 .circle {

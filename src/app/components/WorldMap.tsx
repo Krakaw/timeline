@@ -3,7 +3,7 @@
 import './WorldMap.css'
 import {MapContainer, TileLayer, Marker, FeatureGroup, Popup} from 'react-leaflet';
 import {DivIcon, FeatureGroup as LFeatureGroup, Map} from 'leaflet';
-import React from 'react'
+import React, {useEffect, useMemo} from 'react'
 import {DateTime} from "luxon";
 
 export interface Pin {
@@ -13,20 +13,21 @@ export interface Pin {
     time: string;
     date: string,
     dateTime?: DateTime;
+    isFrom: boolean;
 }
 
 interface WorldMapProps {
-    fromZone?: Pin;
-    toZones: Pin[];
+    pins: Pin[];
 }
 
 
-export default function WorldMap({fromZone, toZones}: WorldMapProps) {
-    const fromTimeZone = fromZone || {name: '', latitude: 0, longitude: 0, time: '', date: ''} as Pin;
+export default function WorldMap({pins}: WorldMapProps) {
+    const [interactivePins, setInteractivePins] = React.useState<Pin[]>(pins);
+
     const mapRef = React.useRef<Map>(null);
     const groupRef = React.useRef<LFeatureGroup>(null);
+    const changeZoomRef = React.useRef(false);
 
-    fromTimeZone.dateTime = DateTime.fromISO(fromTimeZone.date, {setZone: true});
 
     setTimeout(() => {
 
@@ -35,19 +36,25 @@ export default function WorldMap({fromZone, toZones}: WorldMapProps) {
         }
         const map = mapRef.current;
         const group = groupRef.current;
-        map.fitBounds(group.getBounds());
-        map.setZoom(map.getZoom() - 1);
+
         group.eachLayer((layer) => {
             if (layer.openPopup) {
                 layer.openPopup();
             }
         });
+        map.fitBounds(group.getBounds());
+        if (!changeZoomRef.current) {
+            map.setZoom(map.getZoom() - 1);
+            changeZoomRef.current = true;
+        }
     }, 1)
+
 
     const divIcon = new DivIcon({
         className: 'custom-icon',
         html: `<div class="circle"></div>`
     });
+
 
     return (
         <MapContainer zoom={3} center={[0, 0]} ref={mapRef} style={{height: '100vh', width: '100%'}}>
@@ -57,26 +64,36 @@ export default function WorldMap({fromZone, toZones}: WorldMapProps) {
             />
 
             <FeatureGroup ref={groupRef}>
-                {/* From Zone Marker */}
-                <Marker position={[fromTimeZone.latitude, fromTimeZone.longitude]} icon={divIcon}>
-                    <Popup autoClose={false} closeButton={false} closeOnClick={false}>
-                        <h1>
-                            {fromTimeZone.time.split(' ').pop()}<br/>{fromTimeZone.dateTime.toFormat('yyyy-MM-dd HH:mm')}
-                        </h1>
 
-                    </Popup>
-                </Marker>
 
                 {/* To Zones Markers */}
-                {toZones.map((zone, index) => {
+                {interactivePins.map((zone, index) => {
                     zone.dateTime = DateTime.fromISO(zone.date, {setZone: true});
                     return (
-                        <Marker key={index} position={[zone.latitude, zone.longitude]} icon={divIcon}>
-                            <Popup autoClose={false} closeButton={false} closeOnClick={false}>
-                                <h3>
-                                    {zone.time.split(' ').pop()}<br/>{zone.dateTime.toFormat('yyyy-MM-dd HH:mm')}
+                        <Marker key={index} position={[zone.latitude, zone.longitude]}
+                                icon={divIcon}>
+                            <Popup autoClose={false} closeButton={false}
+                                   closeOnClick={false}>
+                                {(zone.isFrom) ?
+                                    (<>
+                                        <h1>
+                                            {zone.time.split(' ').pop()}<br/>{zone.dateTime.toFormat('yyyy-MM-dd HH:mm')}
+                                        </h1>
+                                    </>)
+                                    :
+                                    (<h3 onClick={() => {
 
-                                </h3>
+                                        interactivePins.forEach((pin) => {
+                                            pin.isFrom = false
+                                        });
+                                        zone.isFrom = true;
+                                        setInteractivePins([...interactivePins.filter(p => p.time !== zone.time), zone])
+                                    }}>
+                                        {zone.time.split(' ').pop()}<br/>{zone.dateTime.toFormat('yyyy-MM-dd HH:mm')}
+
+                                    </h3>)
+                                }
+
                             </Popup>
                         </Marker>
                     )
