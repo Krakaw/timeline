@@ -1,8 +1,8 @@
 'use client';
 
 import {MapContainer, TileLayer, Marker, Tooltip, FeatureGroup, Popup} from 'react-leaflet';
+import {FeatureGroup as LFeatureGroup, Map} from 'leaflet';
 import React from 'react'
-import {LeafletElement} from "@react-leaflet/core";
 
 export interface Pin {
     name: string;
@@ -19,8 +19,8 @@ interface WorldMapProps {
 
 export default function WorldMap({fromZone, toZones}: WorldMapProps) {
     const fromTimeZone = fromZone || {name: '', latitude: 0, longitude: 0, time: ''};
-    const mapRef = React.useRef<never>(null);
-    const groupRef = React.useRef<never>(null);
+    const mapRef = React.useRef<Map>(null);
+    const groupRef = React.useRef<LFeatureGroup>(null);
 
 
     setTimeout(() => {

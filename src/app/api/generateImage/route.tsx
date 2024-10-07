@@ -1,10 +1,10 @@
-import { NextRequest } from 'next/server';
-import { ImageResponse } from '@vercel/og';
+import {NextRequest} from 'next/server';
+import {ImageResponse} from '@vercel/og';
 
 export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
+    const {searchParams} = new URL(req.url);
     const fromTime = decodeURIComponent(searchParams.get('fromTime') || '');
     const toTimes = (searchParams.getAll('toTime') || []).map((time) => decodeURIComponent(time));
 
@@ -74,8 +74,9 @@ export async function GET(req: NextRequest) {
             </div>
         ),
         {
+            // 16:9 aspect ratio
             width: 1200,
-            height: 630,
+            height: 675,
         }
     );
 }

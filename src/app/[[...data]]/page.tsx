@@ -2,7 +2,6 @@ import {notFound} from 'next/navigation';
 import {convertTime} from "@/app/utils/timezone";
 import {Metadata} from "next";
 import {parseArray} from "@/app/utils/parseParams";
-import {Pin} from "@/app/components/WorldMap";
 import {timezoneLocations} from "@/app/utils/timezoneLocations";
 import dynamic from "next/dynamic";
 
@@ -30,14 +29,17 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
 
 
     return {
+        metadataBase: new URL('https://timeline.dyn-ip.me'),
         title: `${formattedFromTime}`,
         description: `${formattedFromTime} to ${convertedTimes.length > 0 ? convertedTimes[0] : 'N/A'}.`,
         openGraph: {
+            type: 'website',
+            url: new URL('https://timeline.dyn-ip.me'),
             title: `${formattedFromTime}`,
             description: `${formattedFromTime} to ${convertedTimes.length > 0 ? convertedTimes[0] : 'N/A'}.`,
             images: [
                 {
-                    url: `/api/generateImage?fromTime=${formattedFromTime}&${convertedTimes.map((time) => `toTime=${time}`).join('&')}`,
+                    url: `/api/generateImage?fromTime=${formattedFromTime}&${convertedTimes.map(({time}) => `toTime=${time}`).join('&')}`,
                     width: 1200,
                     height: 630,
                     alt: 'Converted Time',
