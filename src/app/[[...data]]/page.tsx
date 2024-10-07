@@ -39,7 +39,7 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
             description: `When the time is ${formattedFromTime}`,
             images: [
                 {
-                    url: `/api/generateImage.jpg?fromTime=${formattedFromTime}&${pins.map(({time}) => `toTime=${time}`).join('&')}`,
+                    url: `/api/generateImage.jpg?fromTime=${formattedFromTime}&${pins.filter(p => !p.isFrom).map(({time}) => `toTime=${time}`).join('&')}`,
                     width: 1200,
                     height: 630,
                     alt: 'Converted Time',
