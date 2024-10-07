@@ -3,7 +3,7 @@
 import './WorldMap.css'
 import {MapContainer, TileLayer, Marker, FeatureGroup, Popup} from 'react-leaflet';
 import {DivIcon, FeatureGroup as LFeatureGroup, Map} from 'leaflet';
-import React, {useEffect, useMemo} from 'react'
+import React from 'react'
 import {DateTime} from "luxon";
 
 export interface Pin {
