@@ -1,9 +1,6 @@
 services:
   api:
-    image: timeline:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/krakaw/timeline:latest
     ports:
       - "3000:3000"
     environment:
