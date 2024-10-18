@@ -18,13 +18,13 @@ interface PageProps {
 export async function generateMetadata({params}: PageProps): Promise<Metadata> {
     const {data} = params;
 
-    const {from_zone, to_zones, from_time} = parseInputParamsArray(data || []);
+    const {from_zone, to_zones, from_time, from_date} = parseInputParamsArray(data || []);
     if (!from_zone || !to_zones.length) {
         return {
             title: 'Timeline'
         }
     }
-    const pins = convertTime(from_zone, to_zones, from_time);
+    const pins = convertTime(from_zone, to_zones, from_time, from_date);
 
     const fromPin = pins.find(({isFrom}) => isFrom);
     const formattedFromTime = fromPin?.time;
@@ -51,11 +51,11 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
 
 export default function ConversionPage({params}: PageProps) {
     const {data} = params;
-    const {from_zone = '', to_zones, from_time} = parseInputParamsArray(data || []);
+    const {from_zone = '', to_zones, from_time, from_date} = parseInputParamsArray(data || []);
 
 
     try {
-        const pins = convertTime(from_zone || '', to_zones, from_time);
+        const pins = convertTime(from_zone || '', to_zones, from_time, from_date);
 
         return (
             <>
