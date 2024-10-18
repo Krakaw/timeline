@@ -3,10 +3,31 @@ import {ImageResponse} from '@vercel/og';
 
 export const runtime = "edge";
 
+function getColorBasedOnTime(timeString: string) {
+    const timeRegex = /(\d{1,2}):(\d{2})/;
+    if (!timeRegex.test(timeString)) {
+        return '#ff0000'; // Red
+    }
+    const matches = timeString.match(timeRegex) || [];
+    const hours = parseInt(matches[1], 10);
+    const minutes = parseInt(matches[2], 10);
+    const totalMinutes = hours * 60 + minutes;
+    const startOfDay = 8 * 60; // 8 AM in minutes
+    const endOfDay = 17 * 60; // 5 PM in minutes
+
+    if (totalMinutes < startOfDay || totalMinutes > endOfDay) {
+        return '#0a90d8'; // Dark blue
+    } else {
+        return '#ffd700'; // Yellow
+    }
+}
+
 export async function GET(req: NextRequest) {
     const {searchParams} = new URL(req.url);
     const fromTime = decodeURIComponent(searchParams.get('fromTime') || '');
     const toTimes = (searchParams.getAll('toTime') || []).map((time) => decodeURIComponent(time));
+
+    const fromTimeColor = getColorBasedOnTime(fromTime);
 
     return new ImageResponse(
         (
@@ -37,7 +58,7 @@ export async function GET(req: NextRequest) {
                             fontSize: 50,
                             fontWeight: 600,
                             margin: 0,
-                            color: '#d4af37',
+                            color: fromTimeColor,
                         }}
                     >
                         {fromTime}
@@ -84,7 +105,7 @@ export async function GET(req: NextRequest) {
                                 margin: '10px 0',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
+                                width: '1200px', // Set a fixed width for uniformity
                             }}
                         >
                             <p
@@ -92,7 +113,9 @@ export async function GET(req: NextRequest) {
                                     fontSize: 40,
                                     fontWeight: 300,
                                     margin: 0,
-                                    color: '#d4af37',
+                                    color: getColorBasedOnTime(toTime),
+                                    textAlign: 'left', // Align text to the left
+                                    width: '100%', // Ensure text takes the full width of the container
                                 }}
                             >
                                 {toTime}
