@@ -99,13 +99,14 @@ export function findClosestTimezone(query: string): string | undefined {
     return timezoneAbbreviations[normalizedQuery] ?? closestMatch?.canonical
 }
 
-export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeRaw?: string) {
+export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeRaw?: string, fromDateRaw?: string) {
 
     const fromZone = findClosestTimezone(fromZoneRaw);
     const fromTime = decodeURIComponent(fromTimeRaw || DateTime.now().setZone(fromZone).toFormat('HH:mm'));
+    const fromDate = decodeURIComponent(fromDateRaw || DateTime.now().setZone(fromZone).toFormat('yyyy-MM-dd'));
 
 
-    const fromDateTime = DateTime.fromFormat(`${fromTime}`, 'HH:mm', {
+    const fromDateTime = DateTime.fromFormat(`${fromDate} ${fromTime}`, 'yyyy-MM-dd HH:mm', {
         zone: fromZone,
     });
 
