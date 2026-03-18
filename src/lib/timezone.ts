@@ -1,16 +1,9 @@
 import levenshtein from 'fast-levenshtein';
 import {DateTime} from "luxon";
 import {timezoneLocations} from "./timezoneLocations";
+import {Pin} from "./types";
 
-export interface Pin {
-    name: string;
-    latitude: number;
-    longitude: number;
-    time: string;
-    date: string;
-    dateTime?: DateTime;
-    isFrom: boolean;
-}
+export type {Pin};
 
 // List of common timezone abbreviations mapped to IANA equivalents
 const timezoneAbbreviations: Record<string, string> = {
