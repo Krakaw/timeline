@@ -145,6 +145,11 @@ export default function TimelineMap({
                                 key={index}
                                 position={[pin.latitude, pin.longitude]}
                                 icon={divIcon}
+                                eventHandlers={{
+                                    add: (e) => {
+                                        e.target.openPopup();
+                                    },
+                                }}
                             >
                                 <Popup autoClose={false} closeButton={false} closeOnClick={false}>
                                     {pin.isFrom ? (
