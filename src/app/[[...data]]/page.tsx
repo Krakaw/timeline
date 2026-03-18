@@ -26,8 +26,11 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
     }
     const pins = convertTime(from_zone, to_zones, from_time, from_date);
 
-    const fromPin = pins.find(({isFrom}) => isFrom);
-    const formattedFromTime = fromPin?.time;
+    const fromPin = pins.find(({isFrom, invalid}) => isFrom && !invalid);
+    if (!fromPin) {
+        return { title: 'Timeline' };
+    }
+    const formattedFromTime = fromPin.time;
     return {
         metadataBase: new URL('https://timeline.dyn-ip.me'),
         title: `Timeline`,
@@ -39,7 +42,7 @@ export async function generateMetadata({params}: PageProps): Promise<Metadata> {
             description: `When the time is ${formattedFromTime}`,
             images: [
                 {
-                    url: `/api/generateImage.jpg?fromTime=${formattedFromTime}&${pins.filter(p => !p.isFrom).map(({time}) => `toTime=${time}`).join('&')}`,
+                    url: `/api/generateImage.jpg?fromTime=${formattedFromTime}${pins.filter(p => !p.isFrom && !p.invalid).map(({time}) => `&toTime=${time}`).join('')}`,
                     width: 1200,
                     height: 630,
                     alt: 'Converted Time',
