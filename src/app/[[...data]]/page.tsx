@@ -4,8 +4,9 @@ import {Metadata} from "next";
 import {parseInputParamsArray} from "@/lib/parseParams";
 import dynamic from "next/dynamic";
 
-const WorldMap = dynamic(() => import("@/app/components/WorldMap"), {
-    ssr: false, // Disables server-side rendering for this component
+// TimelineMap uses Leaflet which requires browser APIs — disable SSR at the page boundary.
+const TimelineMap = dynamic(() => import("@/components/TimelineMap"), {
+    ssr: false,
 });
 
 interface PageProps {
@@ -53,14 +54,17 @@ export default function ConversionPage({params}: PageProps) {
     const {data} = params;
     const {from_zone = '', to_zones, from_time, from_date} = parseInputParamsArray(data || []);
 
-
     try {
-        const pins = convertTime(from_zone || '', to_zones, from_time, from_date);
+        // Validate that convertTime won't throw before rendering the client component
+        convertTime(from_zone || '', to_zones, from_time, from_date);
 
         return (
-            <>
-                <WorldMap pins={pins}/>
-            </>
+            <TimelineMap
+                fromZone={from_zone || ''}
+                toZones={to_zones}
+                time={from_time}
+                date={from_date}
+            />
         );
     } catch (error) {
         console.log(error)
