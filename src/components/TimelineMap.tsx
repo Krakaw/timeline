@@ -2,8 +2,8 @@
 
 import './TimelineMap.css';
 import { MapContainer, TileLayer, Marker, FeatureGroup, Popup, useMap } from 'react-leaflet';
-import { DivIcon } from 'leaflet';
-import React from 'react';
+import L from 'leaflet';
+import React, { useMemo } from 'react';
 import { DateTime } from 'luxon';
 import { convertTime } from '@/lib/timezone';
 import { Pin } from '@/lib/types';
@@ -67,10 +67,15 @@ export default function TimelineMap({
         setPins(convertTime(fromZone, toZones, time, date));
     }, [fromZone, toZones, time, date]);
 
-    const divIcon = new DivIcon({
-        className: 'custom-icon',
-        html: `<div class="circle"></div>`,
-    });
+    // Fix 1: Wrap divIcon in useMemo to avoid recreating on every render
+    const divIcon = useMemo(
+        () =>
+            L.divIcon({
+                className: 'custom-icon',
+                html: `<div class="circle"></div>`,
+            }),
+        []
+    );
 
     const handlePinClick = (pin: Pin) => {
         setPins((prev) => {
@@ -85,45 +90,48 @@ export default function TimelineMap({
     };
 
     return (
-        <MapContainer
-            zoom={3}
-            center={[0, 0]}
-            className={theme === 'dark' ? 'timeline-map-dark' : ''}
-            style={{ height: '100vh', width: '100%' }}
-        >
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            />
-            <MapFitter pins={pins} />
-            <FeatureGroup>
-                {pins.map((pin, index) => {
-                    const dt = DateTime.fromISO(pin.date, { setZone: true });
-                    return (
-                        <Marker
-                            key={index}
-                            position={[pin.latitude, pin.longitude]}
-                            icon={divIcon}
-                        >
-                            <Popup autoClose={false} closeButton={false} closeOnClick={false}>
-                                {pin.isFrom ? (
-                                    <h1>
-                                        {pin.time.split(' ').pop()}
-                                        <br />
-                                        {dt.toFormat('yyyy-MM-dd HH:mm')}
-                                    </h1>
-                                ) : (
-                                    <h3 onClick={() => handlePinClick(pin)}>
-                                        {pin.time.split(' ').pop()}
-                                        <br />
-                                        {dt.toFormat('yyyy-MM-dd HH:mm')}
-                                    </h3>
-                                )}
-                            </Popup>
-                        </Marker>
-                    );
-                })}
-            </FeatureGroup>
-        </MapContainer>
+        // Fix 2: Wrapper div with .timeline-map class to scope CSS
+        <div className="timeline-map">
+            <MapContainer
+                zoom={3}
+                center={[0, 0]}
+                className={theme === 'dark' ? 'timeline-map-dark' : ''}
+                style={{ height: '100vh', width: '100%' }}
+            >
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
+                <MapFitter pins={pins} />
+                <FeatureGroup>
+                    {pins.map((pin, index) => {
+                        const dt = DateTime.fromISO(pin.date, { setZone: true });
+                        return (
+                            <Marker
+                                key={index}
+                                position={[pin.latitude, pin.longitude]}
+                                icon={divIcon}
+                            >
+                                <Popup autoClose={false} closeButton={false} closeOnClick={false}>
+                                    {pin.isFrom ? (
+                                        <h1>
+                                            {pin.time.split(' ').pop()}
+                                            <br />
+                                            {dt.toFormat('yyyy-MM-dd HH:mm')}
+                                        </h1>
+                                    ) : (
+                                        <h3 onClick={() => handlePinClick(pin)}>
+                                            {pin.time.split(' ').pop()}
+                                            <br />
+                                            {dt.toFormat('yyyy-MM-dd HH:mm')}
+                                        </h3>
+                                    )}
+                                </Popup>
+                            </Marker>
+                        );
+                    })}
+                </FeatureGroup>
+            </MapContainer>
+        </div>
     );
 }

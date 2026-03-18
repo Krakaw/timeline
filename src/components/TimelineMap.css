@@ -5,27 +5,28 @@
     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-.leaflet-popup-tip-container {
+/* Fix 2: Scope all selectors under .timeline-map to prevent global CSS leakage */
+.timeline-map .leaflet-popup-tip-container {
     z-index: 1;
 }
 
-.leaflet-popup-content-wrapper {
+.timeline-map .leaflet-popup-content-wrapper {
     background-color: rgba(42, 40, 40, 0.91);
     color: #fff;
     cursor: pointer;
 }
 
-.leaflet-popup-content-wrapper h1 {
+/* Fix 3: Remove dead z-index on h1/h3 (no position set, so z-index had no effect) */
+.timeline-map .leaflet-popup-content-wrapper h1 {
     color: #da6a19;
     font-size: 1.2em;
-    z-index: 3;
 }
 
-.leaflet-popup-content-wrapper h3 {
-    z-index: 2;
+.timeline-map .leaflet-popup-content-wrapper h3 {
+    /* z-index removed: no position set, was a no-op */
 }
 
-.circle {
+.timeline-map .circle {
     width: 10px;
     height: 10px;
     background-color: #3498db;
