@@ -1,7 +1,7 @@
 import {notFound} from 'next/navigation';
-import {convertTime} from "@/app/utils/timezone";
+import {convertTime} from "@/lib/timezone";
 import {Metadata} from "next";
-import {parseInputParamsArray} from "@/app/utils/parseParams";
+import {parseInputParamsArray} from "@/lib/parseParams";
 import dynamic from "next/dynamic";
 
 const WorldMap = dynamic(() => import("@/app/components/WorldMap"), {

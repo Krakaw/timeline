@@ -1,7 +1,16 @@
 import levenshtein from 'fast-levenshtein';
 import {DateTime} from "luxon";
-import {Pin} from "@/app/components/WorldMap";
-import {timezoneLocations} from "@/app/utils/timezoneLocations";
+import {timezoneLocations} from "./timezoneLocations";
+
+export interface Pin {
+    name: string;
+    latitude: number;
+    longitude: number;
+    time: string;
+    date: string;
+    dateTime?: DateTime;
+    isFrom: boolean;
+}
 
 // List of common timezone abbreviations mapped to IANA equivalents
 const timezoneAbbreviations: Record<string, string> = {
