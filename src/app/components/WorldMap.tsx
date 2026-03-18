@@ -5,7 +5,7 @@ import {MapContainer, TileLayer, Marker, FeatureGroup, Popup} from 'react-leafle
 import {DivIcon, FeatureGroup as LFeatureGroup, Map} from 'leaflet';
 import React from 'react'
 import {DateTime} from "luxon";
-import {Pin} from "@/lib/timezone";
+import {Pin} from "@/lib/types";
 
 export type {Pin};
 
