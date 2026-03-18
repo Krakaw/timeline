@@ -1,5 +1,5 @@
 import {NextRequest} from 'next/server';
-import {timezoneLocations} from "@/app/utils/timezoneLocations";
+import {timezoneLocations} from "@/lib/timezoneLocations";
 import {NextApiResponse} from "next";
 
 export const runtime = "edge";

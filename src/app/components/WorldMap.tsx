@@ -5,16 +5,9 @@ import {MapContainer, TileLayer, Marker, FeatureGroup, Popup} from 'react-leafle
 import {DivIcon, FeatureGroup as LFeatureGroup, Map} from 'leaflet';
 import React from 'react'
 import {DateTime} from "luxon";
+import {Pin} from "@/lib/timezone";
 
-export interface Pin {
-    name: string;
-    latitude: number;
-    longitude: number;
-    time: string;
-    date: string,
-    dateTime?: DateTime;
-    isFrom: boolean;
-}
+export type {Pin};
 
 interface WorldMapProps {
     pins: Pin[];
