@@ -23,6 +23,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@joergdietrich/leaflet.terminator": "^1.3.0",
     "@vercel/og": "^0.6.3",
     "fast-levenshtein": "^3.0.0",
     "leaflet": "^1.9.4",

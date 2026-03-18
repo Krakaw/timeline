@@ -59,6 +59,7 @@ export default function ConversionPage({params}: PageProps) {
             toZones={to_zones}
             time={from_time}
             date={from_date}
+            terminator
         />
     );
 }

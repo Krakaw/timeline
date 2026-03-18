@@ -3,6 +3,8 @@
 import './TimelineMap.css';
 import { MapContainer, TileLayer, Marker, FeatureGroup, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+// @ts-expect-error — no type declarations for this package
+import terminator from '@joergdietrich/leaflet.terminator';
 import React, { useMemo } from 'react';
 import { DateTime } from 'luxon';
 import { convertTime } from '@/lib/timezone';
@@ -16,6 +18,7 @@ export interface TimelineMapProps {
     time?: string;
     date?: string;
     theme?: 'light' | 'dark' | 'auto';
+    terminator?: boolean;
     onPinClick?: (pin: Pin) => void;
 }
 
@@ -41,6 +44,30 @@ function MapFitter({ pins }: { pins: Pin[] }) {
         } else {
             map.fitBounds(bounds, { padding: [40, 40] });
         }
+    }, [map, pins]);
+
+    return null;
+}
+
+/**
+ * Renders the day/night terminator overlay on the map.
+ * Uses the from-pin's datetime so the shadow matches the displayed time.
+ */
+function DayNightTerminator({ pins }: { pins: Pin[] }) {
+    const map = useMap();
+
+    React.useEffect(() => {
+        if (!map) return;
+
+        const fromPin = pins.find((p) => p.isFrom && p.date);
+        const time = fromPin ? new Date(fromPin.date) : undefined;
+
+        const layer = terminator({ time });
+        layer.addTo(map);
+
+        return () => {
+            map.removeLayer(layer);
+        };
     }, [map, pins]);
 
     return null;
@@ -87,6 +114,7 @@ export default function TimelineMap({
     time,
     date,
     theme = 'light',
+    terminator: showTerminator = false,
     onPinClick,
 }: TimelineMapProps) {
     const effectiveTheme = useEffectiveTheme(theme);
@@ -144,6 +172,7 @@ export default function TimelineMap({
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 />
                 <MapFitter pins={validPins} />
+                {showTerminator && <DayNightTerminator pins={validPins} />}
                 <FeatureGroup>
                     {validPins.map((pin, index) => {
                         const dt = DateTime.fromISO(pin.date, { setZone: true });
