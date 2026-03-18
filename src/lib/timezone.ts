@@ -3,7 +3,6 @@ import {DateTime} from "luxon";
 import {timezoneLocations} from "./timezoneLocations";
 import {Pin} from "./types";
 
-export type {Pin};
 
 // List of common timezone abbreviations mapped to IANA equivalents
 const timezoneAbbreviations: Record<string, string> = {
