@@ -1,26 +1,24 @@
 {
   "name": "timeline-v2",
   "version": "0.1.4",
-  "private": true,
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
-    "./style.css": "./src/components/TimelineMap.css"
+    "./style.css": "./dist/style.css"
   },
   "files": [
-    "dist",
-    "src/components/TimelineMap.css"
+    "dist"
   ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:package": "tsup",
+    "build:package": "tsup && cp src/components/TimelineMap.css dist/style.css",
     "start": "next start",
     "lint": "next lint"
   },
