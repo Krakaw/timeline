@@ -2,12 +2,7 @@ import {notFound} from 'next/navigation';
 import {convertTime} from "@/lib/timezone";
 import {Metadata} from "next";
 import {parseInputParamsArray} from "@/lib/parseParams";
-import dynamic from "next/dynamic";
-
-// TimelineMap uses Leaflet which requires browser APIs — disable SSR at the page boundary.
-const TimelineMap = dynamic(() => import("@/components/TimelineMap"), {
-    ssr: false,
-});
+import TimelineMap from "@/components/TimelineMap";
 
 interface PageProps {
     params: {
