@@ -1,3 +1,4 @@
+/* ── Dark tile layer: invert colours ─────────────────────────────────────── */
 .timeline-map-dark .leaflet-layer,
 .timeline-map-dark .leaflet-control-zoom-in,
 .timeline-map-dark .leaflet-control-zoom-out,
@@ -5,27 +6,44 @@
     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-/* Fix 2: Scope all selectors under .timeline-map to prevent global CSS leakage */
+/* ── Shared popup chrome ─────────────────────────────────────────────────── */
 .timeline-map .leaflet-popup-tip-container {
     z-index: 1;
 }
 
-.timeline-map .leaflet-popup-content-wrapper {
+/* ── Dark theme popup ────────────────────────────────────────────────────── */
+.timeline-map--dark .leaflet-popup-content-wrapper {
     background-color: rgba(42, 40, 40, 0.91);
     color: #fff;
     cursor: pointer;
 }
 
-/* Fix 3: Remove dead z-index on h1/h3 (no position set, so z-index had no effect) */
-.timeline-map .leaflet-popup-content-wrapper h1 {
+.timeline-map--dark .leaflet-popup-content-wrapper h1 {
     color: #da6a19;
     font-size: 1.2em;
 }
 
-.timeline-map .leaflet-popup-content-wrapper h3 {
-    /* z-index removed: no position set, was a no-op */
+.timeline-map--dark .leaflet-popup-tip {
+    background-color: rgba(42, 40, 40, 0.91);
 }
 
+/* ── Light theme popup ───────────────────────────────────────────────────── */
+.timeline-map--light .leaflet-popup-content-wrapper {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #222;
+    cursor: pointer;
+}
+
+.timeline-map--light .leaflet-popup-content-wrapper h1 {
+    color: #c0541a;
+    font-size: 1.2em;
+}
+
+.timeline-map--light .leaflet-popup-tip {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* ── Marker circle ───────────────────────────────────────────────────────── */
 .timeline-map .circle {
     width: 10px;
     height: 10px;

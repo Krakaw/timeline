@@ -15,7 +15,7 @@ export interface TimelineMapProps {
     toZones: string[];
     time?: string;
     date?: string;
-    theme?: 'dark' | 'light';
+    theme?: 'light' | 'dark' | 'auto';
     onPinClick?: (pin: Pin) => void;
 }
 
@@ -47,6 +47,37 @@ function MapFitter({ pins }: { pins: Pin[] }) {
 }
 
 /**
+ * Resolve the effective theme ('light' | 'dark') from the theme prop.
+ * When theme is 'auto', uses prefers-color-scheme media query.
+ */
+function useEffectiveTheme(theme: 'light' | 'dark' | 'auto'): 'light' | 'dark' {
+    const getSystemTheme = (): 'light' | 'dark' =>
+        typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
+
+    const [effectiveTheme, setEffectiveTheme] = React.useState<'light' | 'dark'>(() =>
+        theme === 'auto' ? getSystemTheme() : theme
+    );
+
+    React.useEffect(() => {
+        if (theme !== 'auto') {
+            setEffectiveTheme(theme);
+            return;
+        }
+
+        setEffectiveTheme(getSystemTheme());
+
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const handler = (e: MediaQueryListEvent) => setEffectiveTheme(e.matches ? 'dark' : 'light');
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, [theme]);
+
+    return effectiveTheme;
+}
+
+/**
  * Standalone TimelineMap component — no Next.js dynamic() wrapper required.
  * Accepts timezone props and internally computes Pin positions via timezone utils.
  */
@@ -55,9 +86,11 @@ export default function TimelineMap({
     toZones,
     time,
     date,
-    theme = 'dark',
+    theme = 'light',
     onPinClick,
 }: TimelineMapProps) {
+    const effectiveTheme = useEffectiveTheme(theme);
+
     const [pins, setPins] = React.useState<Pin[]>(() =>
         convertTime(fromZone, toZones, time, date)
     );
@@ -91,11 +124,12 @@ export default function TimelineMap({
 
     return (
         // Fix 2: Wrapper div with .timeline-map class to scope CSS
-        <div className="timeline-map">
+        // theme class drives popup/marker colour scheme
+        <div className={`timeline-map timeline-map--${effectiveTheme}`}>
             <MapContainer
                 zoom={3}
                 center={[0, 0]}
-                className={theme === 'dark' ? 'timeline-map-dark' : ''}
+                className={effectiveTheme === 'dark' ? 'timeline-map-dark' : ''}
                 style={{ height: '100vh', width: '100%' }}
             >
                 <TileLayer
