@@ -1,4 +1,3 @@
-import {notFound} from 'next/navigation';
 import {convertTime} from "@/lib/timezone";
 import {Metadata} from "next";
 import {parseInputParamsArray} from "@/lib/parseParams";
@@ -54,20 +53,12 @@ export default function ConversionPage({params}: PageProps) {
     const {data} = params;
     const {from_zone = '', to_zones, from_time, from_date} = parseInputParamsArray(data || []);
 
-    try {
-        // Validate that convertTime won't throw before rendering the client component
-        convertTime(from_zone || '', to_zones, from_time, from_date);
-
-        return (
-            <TimelineMap
-                fromZone={from_zone || ''}
-                toZones={to_zones}
-                time={from_time}
-                date={from_date}
-            />
-        );
-    } catch (error) {
-        console.log(error)
-        notFound(); // Return a 404 page if an error occurs
-    }
+    return (
+        <TimelineMap
+            fromZone={from_zone || ''}
+            toZones={to_zones}
+            time={from_time}
+            date={from_date}
+        />
+    );
 }

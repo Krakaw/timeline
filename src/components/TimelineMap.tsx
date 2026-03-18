@@ -122,10 +122,17 @@ export default function TimelineMap({
         onPinClick?.(pin);
     };
 
+    const validPins = pins.filter((p) => !p.invalid);
+    const invalidPins = pins.filter((p) => p.invalid);
+
     return (
-        // Fix 2: Wrapper div with .timeline-map class to scope CSS
-        // theme class drives popup/marker colour scheme
         <div className={`timeline-map timeline-map--${effectiveTheme}`}>
+            {invalidPins.length > 0 && (
+                <div className="timeline-map-invalid-banner">
+                    Unknown timezone{invalidPins.length > 1 ? 's' : ''}:{' '}
+                    {invalidPins.map((p) => `"${p.name}"`).join(', ')}
+                </div>
+            )}
             <MapContainer
                 zoom={3}
                 center={[0, 0]}
@@ -136,9 +143,9 @@ export default function TimelineMap({
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 />
-                <MapFitter pins={pins} />
+                <MapFitter pins={validPins} />
                 <FeatureGroup>
-                    {pins.map((pin, index) => {
+                    {validPins.map((pin, index) => {
                         const dt = DateTime.fromISO(pin.date, { setZone: true });
                         return (
                             <Marker

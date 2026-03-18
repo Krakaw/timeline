@@ -77,19 +77,28 @@ const allTimezones: { name: string, canonical: string }[] = [
 export function findClosestTimezone(query: string): string | undefined {
     const normalizedQuery = query.toLowerCase();
 
+    // Check abbreviations first (e.g. "sast" → "Africa/Johannesburg")
+    const abbr = timezoneAbbreviations[normalizedQuery];
+    if (abbr) {
+        return abbr;
+    }
+
     const exactMatch = allTimezones.find((tz) => {
-        const [, city] = tz.name.toLowerCase().split('/');
+        const parts = tz.name.toLowerCase().split('/');
+        const city = parts[parts.length - 1];
         return tz.name.toLowerCase() === normalizedQuery || city === normalizedQuery;
     });
     if (exactMatch) {
         return exactMatch.canonical;
     }
+
     let closestMatch: { name: string, canonical: string } | undefined;
     let smallestDistance = Infinity;
 
-
     allTimezones.forEach((tz) => {
-        const [, city] = tz.name.toLowerCase().split('/');
+        const parts = tz.name.toLowerCase().split('/');
+        const city = parts[parts.length - 1];
+        if (!city) return;
         const distance = levenshtein.get(city, normalizedQuery);
         if (distance < smallestDistance) {
             smallestDistance = distance;
@@ -97,12 +106,29 @@ export function findClosestTimezone(query: string): string | undefined {
         }
     });
 
-    return timezoneAbbreviations[normalizedQuery] ?? closestMatch?.canonical
+    // Reject matches that are too far from any known timezone
+    const maxDistance = Math.max(3, Math.floor(normalizedQuery.length / 2));
+    if (smallestDistance > maxDistance) {
+        return undefined;
+    }
+
+    return closestMatch?.canonical;
 }
 
 export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeRaw?: string, fromDateRaw?: string) {
 
     const fromZone = findClosestTimezone(fromZoneRaw);
+    if (!fromZone) {
+        return [{
+            name: fromZoneRaw,
+            latitude: 0,
+            longitude: 0,
+            time: '',
+            date: '',
+            isFrom: true,
+            invalid: true,
+        }];
+    }
     const fromTime = decodeURIComponent(fromTimeRaw || DateTime.now().setZone(fromZone).toFormat('HH:mm'));
     const fromDate = decodeURIComponent(fromDateRaw || DateTime.now().setZone(fromZone).toFormat('yyyy-MM-dd'));
 
@@ -128,8 +154,20 @@ export function convertTime(fromZoneRaw: string, toZonesRaw: string[], fromTimeR
         isFrom: true
     }
 
-    const toZones = toZonesRaw.map(findClosestTimezone);
-    const toPins: Pin[] = toZones.map((toZone) => {
+    const toPins: Pin[] = toZonesRaw.map((toZoneRaw) => {
+        const toZone = findClosestTimezone(toZoneRaw);
+        if (!toZone) {
+            // Return an invalid pin so the UI can show the error
+            return {
+                name: toZoneRaw,
+                latitude: 0,
+                longitude: 0,
+                time: '',
+                date: '',
+                isFrom: false,
+                invalid: true,
+            } as Pin;
+        }
         const {
             latitude,
             longitude

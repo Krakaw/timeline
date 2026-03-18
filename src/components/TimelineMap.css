@@ -6,6 +6,10 @@
     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
+.timeline-map {
+    position: relative;
+}
+
 /* ── Shared popup chrome ─────────────────────────────────────────────────── */
 .timeline-map .leaflet-popup-tip-container {
     z-index: 1;
@@ -49,4 +53,21 @@
     height: 10px;
     background-color: #3498db;
     border-radius: 50%;
+}
+
+/* ── Invalid timezone banner ────────────────────────────────────────────── */
+.timeline-map-invalid-banner {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: #d32f2f;
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
 }

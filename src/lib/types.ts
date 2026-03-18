@@ -8,4 +8,5 @@ export interface Pin {
     date: string;
     dateTime?: DateTime;
     isFrom: boolean;
+    invalid?: boolean;
 }
