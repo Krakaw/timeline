@@ -119,9 +119,10 @@ interface ControlsPanelProps {
     time: string;
     date: string;
     onChange: (config: TimelineConfig) => void;
+    onFocusZone?: (zone: string) => void;
 }
 
-function ControlsPanel({ fromZone, toZones, time, date, onChange }: ControlsPanelProps) {
+function ControlsPanel({ fromZone, toZones, time, date, onChange, onFocusZone }: ControlsPanelProps) {
     const [newZone, setNewZone] = React.useState('');
     const [timeInput, setTimeInput] = React.useState(time);
     const [timeError, setTimeError] = React.useState(false);
@@ -222,7 +223,9 @@ function ControlsPanel({ fromZone, toZones, time, date, onChange }: ControlsPane
                         key={`${zone}-${i}`}
                         className={`timeline-map-controls-chip${
                             i === 0 ? ' timeline-map-controls-chip--from' : ''
-                        }`}
+                        }${onFocusZone ? ' timeline-map-controls-chip--clickable' : ''}`}
+                        onClick={onFocusZone ? () => onFocusZone(zone) : undefined}
+                        title={onFocusZone ? `Focus ${zone}` : undefined}
                     >
                         {i === 0 && <span className="timeline-map-controls-chip-label">from</span>}
                         {zone}
@@ -230,7 +233,10 @@ function ControlsPanel({ fromZone, toZones, time, date, onChange }: ControlsPane
                             type="button"
                             className="timeline-map-controls-chip-remove"
                             aria-label={`Remove ${zone}`}
-                            onClick={() => removeZone(i)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                removeZone(i);
+                            }}
                         >
                             ×
                         </button>
@@ -310,7 +316,10 @@ function PinPopup({ pin, onEdit }: PinPopupProps) {
     };
 
     return (
-        <div className={`pin-popup pin-popup--${pin.isFrom ? 'from' : 'to'}`}>
+        <div
+            className={`pin-popup pin-popup--${pin.isFrom ? 'from' : 'to'}`}
+            data-tz={pin.name}
+        >
             <div className="pin-popup-name">{pin.name}</div>
             <div className="pin-popup-row">
                 <input
@@ -431,6 +440,18 @@ export default function TimelineMap({
                     time={time || ''}
                     date={date || ''}
                     onChange={onConfigChange}
+                    onFocusZone={(zone) => {
+                        const canonical = findClosestTimezone(zone);
+                        if (!canonical) return;
+                        const popup = document.querySelector<HTMLElement>(
+                            `.pin-popup[data-tz="${CSS.escape(canonical)}"]`
+                        );
+                        const timeInput = popup?.querySelector<HTMLInputElement>(
+                            '.pin-popup-input--time'
+                        );
+                        timeInput?.focus();
+                        timeInput?.select();
+                    }}
                 />
             )}
             <MapContainer

@@ -35,6 +35,11 @@
     background-color: rgba(255, 255, 255, 0.95);
 }
 
+/* Bump the focused popup above its siblings so its inputs/calendar stay on top. */
+.leaflet-popup:focus-within {
+    z-index: 1000 !important;
+}
+
 /* ── Editable pin popup ─────────────────────────────────────────────────── */
 .pin-popup {
     display: flex;
@@ -231,6 +236,18 @@
 .timeline-map-controls-chip--from {
     background: rgba(218, 106, 25, 0.18);
     border-color: rgba(218, 106, 25, 0.5);
+}
+
+.timeline-map-controls-chip--clickable {
+    cursor: pointer;
+}
+
+.timeline-map-controls-chip--clickable:hover {
+    filter: brightness(0.95);
+}
+
+.timeline-map--dark .timeline-map-controls-chip--clickable:hover {
+    filter: brightness(1.2);
 }
 
 .timeline-map-controls-chip-label {
