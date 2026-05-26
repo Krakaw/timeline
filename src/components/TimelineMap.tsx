@@ -3,14 +3,21 @@
 import './TimelineMap.css';
 import { MapContainer, TileLayer, Marker, FeatureGroup, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-// @ts-expect-error — no type declarations for this package
 import terminator from '@joergdietrich/leaflet.terminator';
 import React, { useMemo } from 'react';
 import { DateTime } from 'luxon';
 import { convertTime } from '@/lib/timezone';
+import { parseTime } from '@/lib/parseParams';
 import { Pin } from '@/lib/types';
 
 export type { Pin };
+
+export interface TimelineConfig {
+    fromZone: string;
+    toZones: string[];
+    time?: string;
+    date?: string;
+}
 
 export interface TimelineMapProps {
     fromZone: string;
@@ -19,7 +26,9 @@ export interface TimelineMapProps {
     date?: string;
     theme?: 'light' | 'dark' | 'auto';
     terminator?: boolean;
+    showControls?: boolean;
     onPinClick?: (pin: Pin) => void;
+    onConfigChange?: (config: TimelineConfig) => void;
 }
 
 /**
@@ -104,6 +113,157 @@ function useEffectiveTheme(theme: 'light' | 'dark' | 'auto'): 'light' | 'dark' {
     return effectiveTheme;
 }
 
+interface ControlsPanelProps {
+    fromZone: string;
+    toZones: string[];
+    time: string;
+    date: string;
+    onChange: (config: TimelineConfig) => void;
+}
+
+function ControlsPanel({ fromZone, toZones, time, date, onChange }: ControlsPanelProps) {
+    const [newZone, setNewZone] = React.useState('');
+    const [timeInput, setTimeInput] = React.useState(time);
+    const [timeError, setTimeError] = React.useState(false);
+
+    // Keep the local time input in sync when external time changes
+    React.useEffect(() => {
+        setTimeInput(time);
+        setTimeError(false);
+    }, [time]);
+
+    const addZone = () => {
+        const trimmed = newZone.trim();
+        if (!trimmed) return;
+        if (!fromZone) {
+            onChange({ fromZone: trimmed, toZones, time, date });
+        } else {
+            onChange({ fromZone, toZones: [...toZones, trimmed], time, date });
+        }
+        setNewZone('');
+    };
+
+    const removeZone = (index: number) => {
+        // index 0 = fromZone; index >= 1 = toZones[index - 1]
+        if (index === 0) {
+            // Promote the first toZone (if any) to fromZone
+            const [nextFrom, ...rest] = toZones;
+            onChange({ fromZone: nextFrom || '', toZones: rest, time, date });
+        } else {
+            const nextToZones = toZones.filter((_, i) => i !== index - 1);
+            onChange({ fromZone, toZones: nextToZones, time, date });
+        }
+    };
+
+    const commitTime = () => {
+        const trimmed = timeInput.trim();
+        if (!trimmed) {
+            // Empty = clear time (use "now")
+            setTimeError(false);
+            if (time) onChange({ fromZone, toZones, time: undefined, date });
+            return;
+        }
+        const parsed = parseTime(trimmed);
+        if (!parsed) {
+            setTimeError(true);
+            return;
+        }
+        setTimeError(false);
+        setTimeInput(parsed);
+        if (parsed !== time) {
+            onChange({ fromZone, toZones, time: parsed, date });
+        }
+    };
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        onChange({ fromZone, toZones, time, date: value || undefined });
+    };
+
+    const allZones = fromZone ? [fromZone, ...toZones] : toZones;
+
+    return (
+        <div className="timeline-map-controls">
+            <div className="timeline-map-controls-row">
+                <label className="timeline-map-controls-label">Date</label>
+                <input
+                    type="date"
+                    className="timeline-map-controls-input"
+                    value={date || ''}
+                    onChange={handleDateChange}
+                />
+                <label className="timeline-map-controls-label">Time</label>
+                <input
+                    type="text"
+                    className={`timeline-map-controls-input timeline-map-controls-input--time${
+                        timeError ? ' timeline-map-controls-input--error' : ''
+                    }`}
+                    value={timeInput}
+                    placeholder="e.g. 1900 or 08:00"
+                    onChange={(e) => {
+                        setTimeInput(e.target.value);
+                        if (timeError) setTimeError(false);
+                    }}
+                    onBlur={commitTime}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitTime();
+                        }
+                    }}
+                />
+            </div>
+            <div className="timeline-map-controls-zones">
+                {allZones.length === 0 && (
+                    <span className="timeline-map-controls-empty">No timezones added yet</span>
+                )}
+                {allZones.map((zone, i) => (
+                    <span
+                        key={`${zone}-${i}`}
+                        className={`timeline-map-controls-chip${
+                            i === 0 ? ' timeline-map-controls-chip--from' : ''
+                        }`}
+                    >
+                        {i === 0 && <span className="timeline-map-controls-chip-label">from</span>}
+                        {zone}
+                        <button
+                            type="button"
+                            className="timeline-map-controls-chip-remove"
+                            aria-label={`Remove ${zone}`}
+                            onClick={() => removeZone(i)}
+                        >
+                            ×
+                        </button>
+                    </span>
+                ))}
+            </div>
+            <div className="timeline-map-controls-row">
+                <input
+                    type="text"
+                    className="timeline-map-controls-input timeline-map-controls-input--zone"
+                    value={newZone}
+                    placeholder="Add timezone (e.g. tokyo, pst, Europe/London)"
+                    onChange={(e) => setNewZone(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addZone();
+                        }
+                    }}
+                />
+                <button
+                    type="button"
+                    className="timeline-map-controls-button"
+                    onClick={addZone}
+                    disabled={!newZone.trim()}
+                >
+                    Add
+                </button>
+            </div>
+        </div>
+    );
+}
+
 /**
  * Standalone TimelineMap component — no Next.js dynamic() wrapper required.
  * Accepts timezone props and internally computes Pin positions via timezone utils.
@@ -115,7 +275,9 @@ export default function TimelineMap({
     date,
     theme = 'light',
     terminator: showTerminator = false,
+    showControls = true,
     onPinClick,
+    onConfigChange,
 }: TimelineMapProps) {
     const effectiveTheme = useEffectiveTheme(theme);
 
@@ -147,6 +309,15 @@ export default function TimelineMap({
             if (idx !== -1) updated[idx] = { ...updated[idx], isFrom: true };
             return updated;
         });
+        // Notify parent so URL/state can swap from/to ordering
+        if (onConfigChange && pin.name) {
+            const clickedName = pin.name;
+            if (clickedName !== fromZone) {
+                const nextToZones = toZones.filter((z) => z !== clickedName);
+                if (fromZone) nextToZones.unshift(fromZone);
+                onConfigChange({ fromZone: clickedName, toZones: nextToZones, time, date });
+            }
+        }
         onPinClick?.(pin);
     };
 
@@ -160,6 +331,15 @@ export default function TimelineMap({
                     Unknown timezone{invalidPins.length > 1 ? 's' : ''}:{' '}
                     {invalidPins.map((p) => `"${p.name}"`).join(', ')}
                 </div>
+            )}
+            {showControls && onConfigChange && (
+                <ControlsPanel
+                    fromZone={fromZone}
+                    toZones={toZones}
+                    time={time || ''}
+                    date={date || ''}
+                    onChange={onConfigChange}
+                />
             )}
             <MapContainer
                 zoom={3}

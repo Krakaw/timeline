@@ -1,12 +1,7 @@
 import {convertTime} from "@/lib/timezone";
 import {Metadata} from "next";
 import {parseInputParamsArray} from "@/lib/parseParams";
-import dynamic from "next/dynamic";
-
-// TimelineMap uses Leaflet which requires browser APIs — disable SSR at the page boundary.
-const TimelineMap = dynamic(() => import("@/components/TimelineMap"), {
-    ssr: false,
-});
+import TimelineMapWithUrlSync from "./TimelineMapWithUrlSync";
 
 interface PageProps {
     params: {
@@ -57,12 +52,11 @@ export default function ConversionPage({params}: PageProps) {
     const {from_zone = '', to_zones, from_time, from_date} = parseInputParamsArray(data || []);
 
     return (
-        <TimelineMap
+        <TimelineMapWithUrlSync
             fromZone={from_zone || ''}
             toZones={to_zones}
             time={from_time}
             date={from_date}
-            terminator
         />
     );
 }

@@ -9,7 +9,7 @@
 export { default, default as TimelineMap } from './TimelineMap';
 
 // Types
-export type { TimelineMapProps, Pin } from './TimelineMap';
+export type { TimelineMapProps, TimelineConfig, Pin } from './TimelineMap';
 
 // Utility functions
 export { convertTime, findClosestTimezone } from '../lib/timezone';

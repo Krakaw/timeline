@@ -3,7 +3,7 @@
  *   17:00, 5:30, 1700, 530, 5pm, 5:30pm, 5:30am, 17h30, 5h, etc.
  * Returns "HH:MM" (24h, zero-padded) or undefined if not a time.
  */
-function parseTime(input: string): string | undefined {
+export function parseTime(input: string): string | undefined {
     const s = input.trim().toLowerCase();
 
     // 12-hour with am/pm: "5pm", "5:30pm", "5:30am", "530pm"
