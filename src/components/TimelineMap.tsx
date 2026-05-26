@@ -6,7 +6,7 @@ import L from 'leaflet';
 import terminator from '@joergdietrich/leaflet.terminator';
 import React, { useMemo } from 'react';
 import { DateTime } from 'luxon';
-import { convertTime } from '@/lib/timezone';
+import { convertTime, findClosestTimezone } from '@/lib/timezone';
 import { parseTime } from '@/lib/parseParams';
 import { Pin } from '@/lib/types';
 
@@ -264,6 +264,85 @@ function ControlsPanel({ fromZone, toZones, time, date, onChange }: ControlsPane
     );
 }
 
+interface PinPopupProps {
+    pin: Pin;
+    onEdit: (pin: Pin, date: string, time: string) => void;
+}
+
+function PinPopup({ pin, onEdit }: PinPopupProps) {
+    const dt = DateTime.fromISO(pin.date, { setZone: true });
+    const dtDate = dt.toFormat('yyyy-MM-dd');
+    const dtTime = dt.toFormat('HH:mm');
+    const tzAbbr = pin.time.split(' ').pop() || '';
+
+    const [timeInput, setTimeInput] = React.useState(dtTime);
+    const [timeError, setTimeError] = React.useState(false);
+
+    React.useEffect(() => {
+        setTimeInput(dtTime);
+        setTimeError(false);
+    }, [dtTime]);
+
+    const commitTime = () => {
+        const trimmed = timeInput.trim();
+        if (!trimmed) {
+            setTimeInput(dtTime);
+            setTimeError(false);
+            return;
+        }
+        const parsed = parseTime(trimmed);
+        if (!parsed) {
+            setTimeError(true);
+            return;
+        }
+        setTimeError(false);
+        setTimeInput(parsed);
+        if (parsed !== dtTime) {
+            onEdit(pin, dtDate, parsed);
+        }
+    };
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newDate = e.target.value;
+        if (newDate && newDate !== dtDate) {
+            onEdit(pin, newDate, dtTime);
+        }
+    };
+
+    return (
+        <div className={`pin-popup pin-popup--${pin.isFrom ? 'from' : 'to'}`}>
+            <div className="pin-popup-name">{pin.name}</div>
+            <div className="pin-popup-row">
+                <input
+                    type="date"
+                    className="pin-popup-input pin-popup-input--date"
+                    value={dtDate}
+                    onChange={handleDateChange}
+                />
+                <input
+                    type="text"
+                    className={`pin-popup-input pin-popup-input--time${
+                        timeError ? ' pin-popup-input--error' : ''
+                    }`}
+                    value={timeInput}
+                    onChange={(e) => {
+                        setTimeInput(e.target.value);
+                        if (timeError) setTimeError(false);
+                    }}
+                    onBlur={commitTime}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            commitTime();
+                        }
+                    }}
+                />
+            </div>
+            <div className="pin-popup-tz">{tzAbbr}</div>
+        </div>
+    );
+}
+
 /**
  * Standalone TimelineMap component — no Next.js dynamic() wrapper required.
  * Accepts timezone props and internally computes Pin positions via timezone utils.
@@ -300,24 +379,37 @@ export default function TimelineMap({
         []
     );
 
-    const handlePinClick = (pin: Pin) => {
-        setPins((prev) => {
-            const updated = prev.map((p) => ({ ...p, isFrom: false }));
-            const idx = updated.findIndex(
-                (p) => p.latitude === pin.latitude && p.longitude === pin.longitude
-            );
-            if (idx !== -1) updated[idx] = { ...updated[idx], isFrom: true };
-            return updated;
-        });
-        // Notify parent so URL/state can swap from/to ordering
-        if (onConfigChange && pin.name) {
-            const clickedName = pin.name;
-            if (clickedName !== fromZone) {
-                const nextToZones = toZones.filter((z) => z !== clickedName);
-                if (fromZone) nextToZones.unshift(fromZone);
-                onConfigChange({ fromZone: clickedName, toZones: nextToZones, time, date });
-            }
+    const handlePinEdit = (pin: Pin, newDate: string, newTime: string) => {
+        if (!pin.name) return;
+        const newCanonical = pin.name;
+        const currentFromCanonical = fromZone ? findClosestTimezone(fromZone) : undefined;
+
+        let newFromZone: string;
+        let newToZones: string[];
+
+        if (newCanonical === currentFromCanonical) {
+            // Editing the current from-zone — just update time/date, keep zone order/raw form
+            newFromZone = fromZone;
+            newToZones = toZones;
+        } else {
+            // Promote this pin to from. Prefer the existing raw form in toZones for clean URLs.
+            const existingRaw = toZones.find((z) => findClosestTimezone(z) === newCanonical);
+            newFromZone = existingRaw || newCanonical;
+            // Remove any toZone that canonicalizes to the new from
+            newToZones = toZones.filter((z) => findClosestTimezone(z) !== newCanonical);
+            // Prepend the previous from
+            if (fromZone) newToZones.unshift(fromZone);
         }
+
+        // Update local pins immediately so library users (no onConfigChange) still see the update
+        setPins(convertTime(newFromZone, newToZones, newTime, newDate));
+
+        onConfigChange?.({
+            fromZone: newFromZone,
+            toZones: newToZones,
+            time: newTime,
+            date: newDate,
+        });
         onPinClick?.(pin);
     };
 
@@ -354,37 +446,22 @@ export default function TimelineMap({
                 <MapFitter pins={validPins} />
                 {showTerminator && <DayNightTerminator pins={validPins} />}
                 <FeatureGroup>
-                    {validPins.map((pin, index) => {
-                        const dt = DateTime.fromISO(pin.date, { setZone: true });
-                        return (
-                            <Marker
-                                key={index}
-                                position={[pin.latitude, pin.longitude]}
-                                icon={divIcon}
-                                eventHandlers={{
-                                    add: (e) => {
-                                        e.target.openPopup();
-                                    },
-                                }}
-                            >
-                                <Popup autoClose={false} closeButton={false} closeOnClick={false}>
-                                    {pin.isFrom ? (
-                                        <h1>
-                                            {pin.time.split(' ').pop()}
-                                            <br />
-                                            {dt.toFormat('yyyy-MM-dd HH:mm')}
-                                        </h1>
-                                    ) : (
-                                        <h3 onClick={() => handlePinClick(pin)}>
-                                            {pin.time.split(' ').pop()}
-                                            <br />
-                                            {dt.toFormat('yyyy-MM-dd HH:mm')}
-                                        </h3>
-                                    )}
-                                </Popup>
-                            </Marker>
-                        );
-                    })}
+                    {validPins.map((pin) => (
+                        <Marker
+                            key={pin.name}
+                            position={[pin.latitude, pin.longitude]}
+                            icon={divIcon}
+                            eventHandlers={{
+                                add: (e) => {
+                                    e.target.openPopup();
+                                },
+                            }}
+                        >
+                            <Popup autoClose={false} closeButton={false} closeOnClick={false}>
+                                <PinPopup pin={pin} onEdit={handlePinEdit} />
+                            </Popup>
+                        </Marker>
+                    ))}
                 </FeatureGroup>
             </MapContainer>
         </div>

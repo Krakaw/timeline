@@ -19,12 +19,6 @@
 .timeline-map--dark .leaflet-popup-content-wrapper {
     background-color: rgba(42, 40, 40, 0.91);
     color: #fff;
-    cursor: pointer;
-}
-
-.timeline-map--dark .leaflet-popup-content-wrapper h1 {
-    color: #da6a19;
-    font-size: 1.2em;
 }
 
 .timeline-map--dark .leaflet-popup-tip {
@@ -35,16 +29,85 @@
 .timeline-map--light .leaflet-popup-content-wrapper {
     background-color: rgba(255, 255, 255, 0.95);
     color: #222;
-    cursor: pointer;
-}
-
-.timeline-map--light .leaflet-popup-content-wrapper h1 {
-    color: #c0541a;
-    font-size: 1.2em;
 }
 
 .timeline-map--light .leaflet-popup-tip {
     background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* ── Editable pin popup ─────────────────────────────────────────────────── */
+.pin-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+}
+
+.pin-popup-name {
+    font-weight: 600;
+    font-size: 13px;
+    opacity: 0.85;
+}
+
+.pin-popup--from .pin-popup-name {
+    font-size: 14px;
+    opacity: 1;
+}
+
+.timeline-map--light .pin-popup--from .pin-popup-name {
+    color: #c0541a;
+}
+
+.timeline-map--dark .pin-popup--from .pin-popup-name {
+    color: #da6a19;
+}
+
+.pin-popup-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pin-popup-input {
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: #fff;
+    color: #222;
+    font: inherit;
+    min-width: 0;
+}
+
+.timeline-map--dark .pin-popup-input {
+    background: #1f1d1d;
+    color: #f1f1f1;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.pin-popup-input--date {
+    flex: 1;
+    min-width: 110px;
+}
+
+.pin-popup-input--time {
+    width: 70px;
+    text-align: center;
+}
+
+.pin-popup-input--error {
+    border-color: #d32f2f;
+    outline-color: #d32f2f;
+}
+
+.pin-popup-tz {
+    font-size: 11px;
+    opacity: 0.65;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pin-popup--from .pin-popup-tz {
+    opacity: 0.85;
 }
 
 /* ── Marker circle ───────────────────────────────────────────────────────── */
